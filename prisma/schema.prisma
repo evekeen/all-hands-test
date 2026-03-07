@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Supplier {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  companyName String
+  notificationEmail String?
+  notificationTime String @default("08:00")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  catalogItems CatalogItem[]
+  matches     Match[]
+}
+
+model CatalogItem {
+  id           String   @id @default(uuid())
+  supplierId   String
+  supplier     Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  name         String
+  keywords     String   // JSON array stored as string
+  categories   String   // JSON array stored as string
+  skus         String   // JSON array stored as string
+  csvRow       Int?     // Row number in uploaded CSV
+  createdAt    DateTime @default(now())
+
+  matches      Match[]
+}
+
+model Rfq {
+  id          String   @id @default(uuid())
+  fairmarkitId String  @unique
+  title       String
+  description String?
+  category    String?
+  closingDate DateTime?
+  rawData     String?  // JSON stored as string
+  scannedAt   DateTime @default(now())
+
+  matches     Match[]
+}
+
+model Match {
+  id              String   @id @default(uuid())
+  supplierId      String
+  supplier        Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  rfqId           String
+  rfq             Rfq      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  catalogItemId   String?
+  catalogItem     CatalogItem? @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+  confidenceScore Float
+  status          String   @default("pending") // pending, viewed, bid_started
+  llmReasoning    String?  // LLM explanation for the match
+  emailSentAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@unique([supplierId, rfqId])
+}

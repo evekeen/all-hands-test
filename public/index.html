@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFQ Matcher - Supplier Portal</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Auth Section -->
+    <section id="auth-section" class="container">
+      <div class="auth-container">
+        <div class="auth-header">
+          <h1>🔔 RFQ Matcher</h1>
+          <p>Match your catalog to relevant RFQs on Fairmarkit</p>
+        </div>
+        
+        <div class="auth-tabs">
+          <button class="tab-btn active" data-tab="login">Login</button>
+          <button class="tab-btn" data-tab="register">Register</button>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" required placeholder="supplier@company.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form hidden">
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input type="email" id="register-email" required placeholder="supplier@company.com">
+          </div>
+          <div class="form-group">
+            <label for="register-company">Company Name</label>
+            <input type="text" id="register-company" required placeholder="Acme Supplies">
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Main App Section -->
+    <section id="main-section" class="hidden">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-content">
+          <div class="logo">
+            <h1>🔔 RFQ Matcher</h1>
+          </div>
+          <div class="header-actions">
+            <span id="user-company" class="user-info"></span>
+            <button id="logout-btn" class="btn btn-outline">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Navigation -->
+      <nav class="app-nav">
+        <div class="nav-content">
+          <button class="nav-btn active" data-view="dashboard">
+            <span class="nav-icon">📊</span> Dashboard
+          </button>
+          <button class="nav-btn" data-view="catalog">
+            <span class="nav-icon">📦</span> Catalog
+          </button>
+          <button class="nav-btn" data-view="rfqs">
+            <span class="nav-icon">📋</span> RFQs
+          </button>
+          <button class="nav-btn" data-view="matches">
+            <span class="nav-icon">🎯</span> Matches
+          </button>
+          <button class="nav-btn" data-view="profile">
+            <span class="nav-icon">⚙️</span> Profile
+          </button>
+        </div>
+      </nav>
+
+      <!-- Dashboard View -->
+      <div id="dashboard-view" class="view active">
+        <div class="container">
+          <div class="view-header">
+            <h2>Dashboard</h2>
+            <button id="run-matching-btn" class="btn btn-primary">🔄 Run Matching</button>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">📦</div>
+              <div class="stat-info">
+                <span class="stat-value" id="catalog-count">0</span>
+                <span class="stat-label">Catalog Items</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📋</div>
+              <div class="stat-info">
+                <span class="stat-value" id="rfq-count">0</span>
+                <span class="stat-label">Available RFQs</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-info">
+                <span class="stat-value" id="match-count">0</span>
+                <span class="stat-label">Your Matches</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⏳</div>
+              <div class="stat-info">
+                <span class="stat-value" id="pending-count">0</span>
+                <span class="stat-label">Pending Action</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="recent-matches">
+            <h3>Recent Matches</h3>
+            <div id="recent-matches-list" class="matches-list">
+              <p class="empty-state">No matches yet. Upload your catalog and run matching!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Catalog View -->
+      <div id="catalog-view" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h2>Product Catalog</h2>
+            <div class="view-actions">
+              <button id="upload-catalog-btn" class="btn btn-primary">📤 Upload CSV</button>
+              <button id="add-item-btn" class="btn btn-outline">+ Add Item</button>
+            </div>
+          </div>
+
+          <div class="catalog-info">
+            <p>Upload a CSV file with your products. Columns: <code>name</code>, <code>keywords</code>, <code>categories</code>, <code>sku</code></p>
+          </div>
+
+          <div id="catalog-list" class="catalog-grid">
+            <p class="empty-state">No catalog items. Upload a CSV or add items manually.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQs View -->
+      <div id="rfqs-view" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h2>Available RFQs</h2>
+            <button id="scan-rfqs-btn" class="btn btn-outline">🔄 Refresh</button>
+          </div>
+
+          <div id="rfq-list" class="rfq-list">
+            <p class="empty-state">Loading RFQs...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matches View -->
+      <div id="matches-view" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h2>Your Matches</h2>
+            <div class="filter-group">
+              <select id="match-filter" class="form-select">
+                <option value="all">All Matches</option>
+                <option value="pending">Pending</option>
+                <option value="viewed">Viewed</option>
+                <option value="bid_started">Bid Started</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="match-list" class="matches-list">
+            <p class="empty-state">No matches found. Run matching to find RFQs.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile View -->
+      <div id="profile-view" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h2>Profile Settings</h2>
+          </div>
+
+          <form id="profile-form" class="profile-form">
+            <div class="form-group">
+              <label for="profile-email">Email</label>
+              <input type="email" id="profile-email" disabled>
+            </div>
+            <div class="form-group">
+              <label for="profile-company">Company Name</label>
+              <input type="text" id="profile-company" required>
+            </div>
+            <div class="form-group">
+              <label for="profile-notification-email">Notification Email</label>
+              <input type="email" id="profile-notification-email" placeholder="Where to receive digests">
+            </div>
+            <div class="form-group">
+              <label for="profile-notification-time">Preferred Notification Time</label>
+              <input type="time" id="profile-notification-time" value="08:00">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </form>
+
+          <div class="demo-section">
+            <h3>Fairmarkit Credentials (Demo)</h3>
+            <p class="info-text">In production, you'd connect your Fairmarkit account here.</p>
+            <div class="demo-credentials">
+              <div class="form-group">
+                <label>Fairmarkit Login</label>
+                <input type="text" value="demo@fairmarkit.com" disabled>
+              </div>
+              <div class="form-group">
+                <label>JWT Token</label>
+                <input type="password" value="••••••••••••" disabled>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- CSV Upload Modal -->
+  <div id="upload-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Upload Catalog CSV</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="upload-form">
+        <div class="form-group">
+          <label>Select CSV File</label>
+          <input type="file" id="csv-file" accept=".csv" required>
+        </div>
+        <div class="csv-preview">
+          <p><strong>Expected columns:</strong></p>
+          <code>name,keywords,categories,sku</code>
+          <p class="example">Example: "Steel Pipe","steel,pipe,metal","construction,plumbing","SKU-001"</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline modal-close">Cancel</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Item Modal -->
+  <div id="item-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Catalog Item</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="item-form">
+        <div class="form-group">
+          <label for="item-name">Product Name</label>
+          <input type="text" id="item-name" required placeholder="Steel Pipe 2 inch">
+        </div>
+        <div class="form-group">
+          <label for="item-keywords">Keywords (comma-separated)</label>
+          <input type="text" id="item-keywords" placeholder="steel, pipe, metal tube">
+        </div>
+        <div class="form-group">
+          <label for="item-categories">Categories (comma-separated)</label>
+          <input type="text" id="item-categories" placeholder="construction, plumbing">
+        </div>
+        <div class="form-group">
+          <label for="item-skus">SKUs (comma-separated)</label>
+          <input type="text" id="item-skus" placeholder="SKU-001, SKU-002">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline modal-close">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Match Detail Modal -->
+  <div id="match-modal" class="modal hidden">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3>Match Details</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div id="match-detail-content"></div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
